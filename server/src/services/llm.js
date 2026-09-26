@@ -34,10 +34,17 @@ export async function generate({ system, messages }) {
   }
 }
 
-// Заглушка для разработки без ключа: «отвечает» первым найденным фрагментом контекста
+// Заглушка для разработки без ключа: «отвечает» самым релевантным фрагментом контекста.
+// Берём ПОСЛЕДНИЙ тег <context>: слово «<context>» встречается и в тексте правил.
 function mockGenerate({ system }) {
-  const ctx = system.split('<context>')[1]?.split('</context>')[0] ?? '';
+  const start = system.lastIndexOf('<context>');
+  const end = system.lastIndexOf('</context>');
+  const ctx = start >= 0 && end > start ? system.slice(start + 9, end) : '';
   const first = ctx.match(/<fragment[^>]*>\n?([\s\S]*?)<\/fragment>/);
   if (!first) return '[NO_ANSWER] К сожалению, у меня нет информации по этому вопросу. Оставьте контакт — сотрудник свяжется с вами.';
-  return `(mock) По нашей базе знаний: ${first[1].trim().slice(0, 400)}`;
+  let text = first[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+  const answer = text.match(/(?:^|\n)Ответ:\s*([\s\S]*)$/);
+  if (answer) text = answer[1];
+  else text = text.replace(/^\[[^\]\n]*\]\n/, ''); // убираем префикс [Заголовок]
+  return text.slice(0, 600).trim();
 }
