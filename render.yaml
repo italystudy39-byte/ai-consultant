@@ -1,0 +1,26 @@
+# Render Blueprint: бесплатный веб-сервис из Dockerfile.
+# База данных — Neon (бесплатный Postgres с pgvector): строку подключения вставьте в DATABASE_URL.
+# Сейчас включён тестовый режим (mock) — без ключей Claude/Voyage.
+# Когда появятся ключи: в Render → Environment поставьте LLM_PROVIDER=anthropic, EMBEDDING_PROVIDER=voyage,
+# добавьте ANTHROPIC_API_KEY и VOYAGE_API_KEY, затем в админке нажмите «Изменить → Сохранить» у источников (переиндексация).
+services:
+  - type: web
+    name: ai-consultant
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: LLM_PROVIDER
+        value: mock
+      - key: EMBEDDING_PROVIDER
+        value: mock
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-6
