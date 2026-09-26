@@ -10,17 +10,17 @@
       disclaimer: 'Ответы генерирует AI и могут содержать неточности', offer: 'Оставить контакт',
       leadTitle: 'Оставьте контакт — сотрудник свяжется с вами', name: 'Имя', contact: 'Телефон или email',
       submit: 'Отправить', cancel: 'Отмена', thanks: 'Спасибо! Мы скоро свяжемся с вами.',
-      error: 'Не удалось отправить сообщение. Проверьте интернет и попробуйте снова.', notFound: 'Виджет не настроен.' },
+      error: 'Не удалось отправить сообщение. Проверьте интернет и попробуйте снова.', notFound: 'Виджет не настроен.', quick: 'Частые вопросы' },
     en: { placeholder: 'Type your question…', online: 'online', typing: 'typing…', close: 'Close', send: 'Send',
       disclaimer: 'Answers are AI-generated and may be inaccurate', offer: 'Leave contact details',
       leadTitle: 'Leave your contact and our team will reach out', name: 'Name', contact: 'Phone or email',
       submit: 'Send', cancel: 'Cancel', thanks: 'Thank you! We will contact you soon.',
-      error: 'Could not send the message. Check your connection and try again.', notFound: 'Widget is not configured.' },
+      error: 'Could not send the message. Check your connection and try again.', notFound: 'Widget is not configured.', quick: 'Popular questions' },
     uz: { placeholder: 'Savolingizni yozing…', online: 'onlayn', typing: 'yozmoqda…', close: 'Yopish', send: 'Yuborish',
       disclaimer: 'Javoblar AI tomonidan yaratiladi va xato bo‘lishi mumkin', offer: 'Kontakt qoldirish',
       leadTitle: 'Kontaktingizni qoldiring — xodimimiz bog‘lanadi', name: 'Ism', contact: 'Telefon yoki email',
       submit: 'Yuborish', cancel: 'Bekor qilish', thanks: 'Rahmat! Tez orada siz bilan bog‘lanamiz.',
-      error: 'Xabar yuborilmadi. Internetni tekshirib, qayta urinib ko‘ring.', notFound: 'Vidjet sozlanmagan.' },
+      error: 'Xabar yuborilmadi. Internetni tekshirib, qayta urinib ko‘ring.', notFound: 'Vidjet sozlanmagan.', quick: 'Ko‘p beriladigan savollar' },
   };
   function pickLang(cfgLang) {
     if (I18N[cfgLang]) return cfgLang;
@@ -48,7 +48,25 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var log = $('log'), input = $('input'), sendBtn = $('send'), form = $('form');
-  var busy = false, cfg = { collectLeads: true };
+  var busy = false, cfg = { collectLeads: true }, quick = [];
+
+  // ── Меню быстрых вопросов
+  function hideQuick() { var q = document.querySelector('.quick'); if (q) q.remove(); }
+  function showQuick() {
+    hideQuick();
+    if (!quick.length) return;
+    var box = document.createElement('div');
+    box.className = 'quick';
+    box.innerHTML = '<div class="quick-title">' + esc(t.quick) + '</div>';
+    quick.forEach(function (q) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = q;
+      b.onclick = function () { send(q); };
+      box.appendChild(b);
+    });
+    log.appendChild(box);
+    scroll();
+  }
 
   // ── Рендер текста: экранирование + минимальный markdown (жирный, ссылки, списки)
   function esc(s) {
@@ -129,6 +147,7 @@
   // ── Отправка сообщения
   function send(text) {
     if (busy || !text) return;
+    hideQuick();
     busy = true; sendBtn.disabled = true;
     addMsg('user', text);
     setTyping(true);
@@ -193,10 +212,15 @@
     .then(function (r) { if (!r.ok) throw new Error('config'); return r.json(); })
     .then(function (c) {
       applyConfig(c);
+      quick = Array.isArray(c.quickQuestions) ? c.quickQuestions.slice(0, 8) : [];
+      var menu = $('menu');
+      menu.hidden = !quick.length;
+      menu.setAttribute('aria-label', t.quick); menu.title = t.quick;
+      menu.onclick = function () { if (document.querySelector('.quick')) hideQuick(); else showQuick(); };
       if (c.greeting) addMsg('bot', c.greeting);
-      if (!conversationId) return;
+      if (!conversationId) { showQuick(); return; }
       return fetch(API + '/conversations/' + encodeURIComponent(conversationId) + '?visitorId=' + encodeURIComponent(visitorId))
-        .then(function (r) { if (!r.ok) { store.del(CKEY); conversationId = null; return null; } return r.json(); })
+        .then(function (r) { if (!r.ok) { store.del(CKEY); conversationId = null; showQuick(); return null; } return r.json(); })
         .then(function (h) { if (h) h.messages.forEach(function (m) { addMsg(m.role, m.text); }); });
     })
     .catch(function () { addMsg('bot', t.notFound, 'err'); input.disabled = true; });

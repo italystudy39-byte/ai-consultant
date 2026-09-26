@@ -40,6 +40,13 @@ router.put('/', ah(async (req, res) => {
     next.accentColor = b.accentColor;
   }
   if (b.collectLeads !== undefined) next.collectLeads = Boolean(b.collectLeads);
+  if (b.quickQuestions !== undefined) {
+    if (!Array.isArray(b.quickQuestions)) throw new HttpError(400, 'quickQuestions должен быть списком');
+    next.quickQuestions = b.quickQuestions
+      .map((q) => str(q, 120))
+      .filter(Boolean)
+      .slice(0, 8);
+  }
 
   const companyName = str(req.body?.companyName, 120);
 

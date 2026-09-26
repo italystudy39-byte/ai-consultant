@@ -14,7 +14,7 @@ export default function Settings() {
 
   useEffect(() => {
     api('/settings')
-      .then((d) => { setData(d); setForm({ companyName: d.companyName, ...d.botConfig }); })
+      .then((d) => { setData(d); setForm({ companyName: d.companyName, ...d.botConfig, quickText: (d.botConfig.quickQuestions || []).join('\n') }); })
       .catch(setError);
   }, []);
 
@@ -28,7 +28,8 @@ export default function Settings() {
     setBusy(true);
     setError(null);
     try {
-      const { companyName, ...botConfig } = form;
+      const { companyName, quickText, ...botConfig } = form;
+      botConfig.quickQuestions = (quickText || '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 8);
       await api('/settings', { method: 'PUT', body: { companyName, botConfig } });
       setSaved(true);
       reload();
@@ -70,6 +71,16 @@ export default function Settings() {
                 <span className="font-mono text-sm text-slate-600">{form.accentColor}</span>
               </div>
             </label>
+            <div>
+              <Textarea
+                label="Меню быстрых вопросов (по одному в строке, до 8)"
+                rows={5}
+                value={form.quickText}
+                onChange={set('quickText')}
+                placeholder={'Сколько стоит доставка?\nКакой у вас режим работы?\nКакие способы оплаты?'}
+              />
+              <p className="mt-1 text-xs text-slate-500">Кнопки с этими вопросами посетитель видит в начале чата и по кнопке меню. Если оставить пустым, покажутся первые вопросы из FAQ базы знаний.</p>
+            </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" className="h-4 w-4 accent-indigo-600" checked={form.collectLeads} onChange={set('collectLeads')} />
               Предлагать оставить контакт, если ответа нет в базе знаний

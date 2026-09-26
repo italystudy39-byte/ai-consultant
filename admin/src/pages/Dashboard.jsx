@@ -21,7 +21,7 @@ function DailyChart({ data }) {
   const [hover, setHover] = useState(null);
   const [asTable, setAsTable] = useState(false);
   const max = Math.max(1, ...data.map((d) => d.conversations));
-  const ticks = [0, Math.ceil(max / 2), max];
+  const ticks = [...new Set([0, Math.ceil(max / 2), max])];
 
   return (
     <Card className="p-4">

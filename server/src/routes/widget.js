@@ -37,9 +37,20 @@ router.param('publicKey', (req, res, next, key) => {
 });
 
 // Публичная конфигурация виджета (без внутренних настроек)
-router.get('/:publicKey/config', (req, res) => {
+router.get('/:publicKey/config', ah(async (req, res) => {
   const c = mergeBotConfig(req.company.bot_config);
-  res.set('Cache-Control', 'public, max-age=60');
+  // Меню быстрых вопросов: заданные вручную или первые вопросы из FAQ
+  let quickQuestions = Array.isArray(c.quickQuestions) ? c.quickQuestions.filter(Boolean) : [];
+  if (!quickQuestions.length) {
+    const { rows } = await db.query(
+      `SELECT question FROM knowledge_sources
+        WHERE company_id = $1 AND type = 'faq' AND status = 'ready'
+        ORDER BY created_at LIMIT 6`,
+      [req.company.id],
+    );
+    quickQuestions = rows.map((r) => r.question);
+  }
+  res.set('Cache-Control', 'no-cache');
   res.json({
     companyName: req.company.name,
     botName: c.botName,
@@ -47,8 +58,9 @@ router.get('/:publicKey/config', (req, res) => {
     language: c.language,
     accentColor: c.accentColor,
     collectLeads: c.collectLeads,
+    quickQuestions,
   });
-});
+}));
 
 // Отправить сообщение
 router.post('/:publicKey/chat', chatPerMinute, chatPerDay, ah(async (req, res) => {

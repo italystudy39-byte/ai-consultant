@@ -7,6 +7,8 @@ export const DEFAULT_BOT_CONFIG = {
   language: 'auto', // auto | ru | en | uz
   accentColor: '#4f46e5',
   collectLeads: true,
+  // быстрые вопросы-кнопки в виджете; пустой список — берутся вопросы из FAQ
+  quickQuestions: [],
 };
 
 export const NO_ANSWER_MARKER = '[NO_ANSWER]';
