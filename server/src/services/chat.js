@@ -54,11 +54,13 @@ export async function answerQuestion({ company, visitorId, conversationId, messa
   let failed = false;
 
   try {
-    // Короткие уточнения («а сколько стоит?») ищем вместе с предыдущим вопросом
+    // Сначала ищем по самому вопросу. Если ничего не нашлось, а вопрос короткий
+    // уточняющий («а сколько стоит?»), повторяем поиск вместе с предыдущим вопросом.
+    let chunks = await searchKnowledge(company.id, message);
     const prevUser = [...history].reverse().find((m) => m.role === 'user');
-    const searchQuery = message.length < 40 && prevUser ? `${prevUser.text}\n${message}` : message;
-
-    const chunks = await searchKnowledge(company.id, searchQuery);
+    if (!chunks.length && prevUser && message.length < 40) {
+      chunks = await searchKnowledge(company.id, `${prevUser.text}\n${message}`);
+    }
     sources = chunks.map((c) => ({ chunkId: c.id, sourceId: c.source_id, title: c.title, score: +c.score.toFixed(3) }));
 
     const raw = await generate({
