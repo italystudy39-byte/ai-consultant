@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11162b"><title>Block Blast — Neon Garden</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<main class="game-container">
+ <div class="brand"><span class="logo">▦</span><div><p class="eyebrow">NEON GARDEN</p><h1>Block Blast<span>.</span></h1></div><span class="badge">8 × 8</span></div>
+ <header class="header"><div class="score-box"><span class="label">Счёт</span><strong id="score" class="value">0</strong></div><div class="record-box"><span class="label">✦ Рекорд</span><strong id="record" class="value">0</strong></div></header>
+ <div class="board-wrap"><div id="board" class="board" role="grid" aria-label="Игровое поле 8 на 8"></div><div id="effects" aria-hidden="true"></div></div>
+ <div class="tray-heading"><span>ВАШИ ФИГУРЫ</span><span>Заполняйте ряды и столбцы</span></div>
+ <div class="pieces-container"><div id="pieces" class="pieces" aria-label="Доступные фигуры"></div></div>
+ <p id="status" class="hint" role="status">Перетащите фигуру на поле или выберите её и нажмите на клетку.</p>
+ <button id="new-game-btn" class="new-game-btn">↻ Новая игра</button>
+ <footer>Без таймера. Один ход за раз.</footer>
+</main>
+<div id="game-over" class="game-over hidden" role="dialog" aria-modal="true" aria-labelledby="over-title"><div class="modal"><span class="end-icon">✦</span><p class="eyebrow">ОТЛИЧНАЯ ПОПЫТКА</p><h2 id="over-title">Ходов больше нет</h2><p>Ваш счёт</p><strong id="final-score">0</strong><p>Рекорд: <span id="final-record">0</span></p><button id="restart-btn">Играть снова →</button></div></div>
+<script src="script.js"></script>
+</body></html>
