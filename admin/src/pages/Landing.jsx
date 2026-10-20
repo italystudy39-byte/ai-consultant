@@ -5,6 +5,7 @@ import { Parallax, ParallaxProvider } from 'react-scroll-parallax';
 import {
   ArrowRight, BarChart3, BookOpen, Bot, Code2, FileText, MessageSquare, ShieldCheck, Sparkles, UserPlus, Zap,
 } from 'lucide-react';
+import { useAuth } from '@/auth.jsx';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +57,7 @@ export default function Landing() {
 }
 
 function Header() {
+  const { me } = useAuth();
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-slate-950/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -63,14 +65,18 @@ function Header() {
           <span className="grid size-8 place-items-center rounded-lg bg-indigo-500"><Bot className="size-5" /></span>
           AI-консультант
         </Link>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" className="text-slate-200 hover:bg-white/10 hover:text-white">
-            <Link to="/login">Войти</Link>
-          </Button>
-          <Button asChild className="hidden sm:inline-flex">
-            <Link to="/login?mode=register">Попробовать</Link>
-          </Button>
-        </div>
+        {me ? (
+          <Button asChild><Link to="/">Панель управления</Link></Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" className="text-slate-200 hover:bg-white/10 hover:text-white">
+              <Link to="/login">Войти</Link>
+            </Button>
+            <Button asChild className="hidden sm:inline-flex">
+              <Link to="/login?mode=register">Попробовать</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   );

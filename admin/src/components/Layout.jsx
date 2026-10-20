@@ -51,6 +51,7 @@ export default function Layout() {
         </div>
         {nav}
         <div className="mt-auto border-t border-slate-100 px-3 pt-4">
+          <a href="/landing" className="mb-3 block text-sm text-indigo-600 hover:underline">Лендинг ↗</a>
           <div className="truncate text-xs text-slate-500">{me?.email}</div>
           <button className="mt-1 text-sm text-slate-600 hover:text-slate-900" onClick={logout}>Выйти</button>
         </div>
