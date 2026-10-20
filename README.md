@@ -39,6 +39,12 @@ cd admin  && npm install && npm run dev                              # :5173, /a
 cd server && npm test      # unit + e2e: регистрация, база знаний, чат, изоляция тенантов, CSV, rate limit
 ```
 
+### Админка на Vercel
+Фронтенд (`admin/`) можно держать на Vercel, а backend с базой Neon — на Render.
+В корне лежит `vercel.json`: Vercel сам соберёт `admin/` и направит запросы к API на
+`https://ai-consultant-8rzo.onrender.com` (другой адрес — переменная `VITE_API_URL` в настройках проекта Vercel).
+Регистрация и вход работают так же: аккаунты хранятся в Neon через backend.
+
 ## Как работает ответ (RAG)
 1. **Индексация** (фоном после загрузки/правки): текст → чанки ~900 символов с перекрытием 150 (FAQ — один чанк «Вопрос/Ответ») → эмбеддинги (Voyage `voyage-3.5` или OpenAI `text-embedding-3-small`, 1024 измерения) → `knowledge_chunks` с `company_id`.
 2. **Вопрос посетителя**: эмбеддинг запроса (короткие уточнения склеиваются с предыдущим вопросом) → top-k по косинусной близости **только внутри компании** (`WHERE company_id = $2`, HNSW-индекс) → отсечение по `RAG_MIN_SCORE`.

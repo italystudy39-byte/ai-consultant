@@ -27,7 +27,9 @@ export function createApp() {
   // ── Публичное API виджета: CORS открыт (виджет встраивается на любые сайты)
   app.use('/api/widget', cors({ origin: true, methods: ['GET', 'POST'] }), widgetRoutes);
 
-  // ── Админское API (JWT)
+  // ── Админское API (JWT). CORS нужен, когда админка открыта с другого домена (Vercel).
+  // Авторизация — заголовок Bearer, не cookie, поэтому чужой сайт не может действовать от имени пользователя.
+  app.use('/api', cors({ origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE'], maxAge: 600 }));
   app.use('/api/auth', authRoutes);
   app.use('/api/knowledge', requireAuth, knowledgeRoutes);
   app.use('/api/conversations', requireAuth, conversationRoutes);

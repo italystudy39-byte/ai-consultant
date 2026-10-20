@@ -11,6 +11,10 @@ export class ApiError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
+// Адрес backend. Пусто — тот же домен (админка на Render или dev-прокси Vite).
+// На Vercel задаётся при сборке (см. vercel.json).
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 let onUnauthorized = () => {};
 export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
 
@@ -20,7 +24,7 @@ export async function api(path, { method = 'GET', body, form } = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}/api${path}`, {
     method,
     headers,
     body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
@@ -36,7 +40,7 @@ export async function api(path, { method = 'GET', body, form } = {}) {
 
 /** Скачивание файла с авторизацией (CSV) */
 export async function download(path, filename) {
-  const res = await fetch(`/api${path}`, { headers: { Authorization: `Bearer ${tokenStore.get()}` } });
+  const res = await fetch(`${API_BASE}/api${path}`, { headers: { Authorization: `Bearer ${tokenStore.get()}` } });
   if (!res.ok) throw new ApiError(res.status, 'Не удалось скачать файл');
   const url = URL.createObjectURL(await res.blob());
   const a = Object.assign(document.createElement('a'), { href: url, download: filename });
