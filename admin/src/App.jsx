@@ -28,6 +28,7 @@ export default function App() {
   }
   return (
     <Routes>
+      <Route path="landing" element={<Landing />} />
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="conversations" element={<Conversations />} />
