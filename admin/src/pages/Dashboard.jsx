@@ -1,18 +1,34 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { HelpCircle, MessageSquare, MessageSquareWarning, UserPlus } from 'lucide-react';
 import { api, fmtDate, qs } from '../api.js';
 import { Badge, Card, Empty, ErrorNote, Input, PageHeader, Spinner } from '../components/ui.jsx';
 
 const today = () => new Date().toISOString().slice(0, 10);
 const daysAgo = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
 
-function Stat({ label, value, hint }) {
+const STAT_TONES = {
+  indigo: 'from-indigo-500 to-indigo-600 shadow-indigo-500/30',
+  violet: 'from-violet-500 to-fuchsia-500 shadow-fuchsia-500/30',
+  amber: 'from-amber-400 to-orange-500 shadow-orange-500/30',
+  emerald: 'from-emerald-400 to-teal-500 shadow-teal-500/30',
+};
+
+function Stat({ label, value, hint, icon: Icon, tone, i }) {
   return (
-    <Card className="p-4">
-      <div className="text-sm text-slate-500">{label}</div>
-      <div className="mt-1 text-3xl font-semibold tabular-nums tracking-tight">{value ?? '—'}</div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
-    </Card>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+      <Card className="relative h-full overflow-hidden p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-sm font-medium text-slate-500">{label}</div>
+          <span className={`grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-white shadow-lg ${STAT_TONES[tone]}`}>
+            <Icon className="size-4" />
+          </span>
+        </div>
+        <div className="mt-2 text-3xl font-bold tabular-nums tracking-tight">{value ?? '—'}</div>
+        {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+      </Card>
+    </motion.div>
   );
 }
 
@@ -24,9 +40,9 @@ function DailyChart({ data }) {
   const ticks = [...new Set([0, Math.ceil(max / 2), max])];
 
   return (
-    <Card className="p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-medium">Диалоги по дням</h2>
+    <Card className="p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-semibold">Диалоги по дням</h2>
         <button className="text-xs text-slate-500 hover:text-slate-800" onClick={() => setAsTable(!asTable)}>
           {asTable ? 'График' : 'Таблица'}
         </button>
@@ -57,7 +73,7 @@ function DailyChart({ data }) {
                   onMouseEnter={() => setHover(i)}
                 >
                   <div
-                    className={`w-full rounded-t ${hover === i ? 'bg-indigo-700' : 'bg-indigo-500'}`}
+                    className={`w-full rounded-t-md bg-gradient-to-t transition-colors ${hover === i ? 'from-indigo-600 to-fuchsia-500' : 'from-indigo-500 to-indigo-400'}`}
                     style={{ height: `${(d.conversations / max) * 100}%`, minHeight: d.conversations ? 2 : 0 }}
                   />
                 </div>
@@ -112,17 +128,17 @@ export default function Dashboard() {
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Stat label="Диалогов" value={t.conversations} hint={`${t.visitors} уникальных посетителей`} />
-            <Stat label="Вопросов" value={t.questions} />
-            <Stat label="Без ответа" value={t.unanswered} hint={t.answerRate !== null ? `Доля ответов: ${t.answerRate}%` : undefined} />
-            <Stat label="Оставили контакт" value={t.leads} />
+            <Stat i={0} icon={MessageSquare} tone="indigo" label="Диалогов" value={t.conversations} hint={`${t.visitors} уникальных посетителей`} />
+            <Stat i={1} icon={HelpCircle} tone="violet" label="Вопросов" value={t.questions} />
+            <Stat i={2} icon={MessageSquareWarning} tone="amber" label="Без ответа" value={t.unanswered} hint={t.answerRate !== null ? `Доля ответов: ${t.answerRate}%` : undefined} />
+            <Stat i={3} icon={UserPlus} tone="emerald" label="Оставили контакт" value={t.leads} />
           </div>
 
           <DailyChart data={data.daily} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
-              <h2 className="border-b border-slate-100 px-4 py-3 font-medium">Топ вопросов</h2>
+              <h2 className="border-b border-slate-100 px-5 py-4 font-semibold">Топ вопросов</h2>
               {data.topQuestions.length === 0 ? <Empty title="Пока нет вопросов" /> : (
                 <ol className="divide-y divide-slate-100">
                   {data.topQuestions.map((q, i) => (
@@ -138,8 +154,8 @@ export default function Dashboard() {
             </Card>
 
             <Card>
-              <div className="border-b border-slate-100 px-4 py-3">
-                <h2 className="font-medium">Вопросы без ответа</h2>
+              <div className="border-b border-slate-100 px-5 py-4">
+                <h2 className="font-semibold">Вопросы без ответа</h2>
                 <p className="text-xs text-slate-500">Добавьте ответы на них в базу знаний</p>
               </div>
               {data.unansweredQuestions.length === 0 ? <Empty title="Все вопросы получили ответ" /> : (
