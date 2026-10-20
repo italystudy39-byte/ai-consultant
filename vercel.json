@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "cd admin && npm install",
+  "buildCommand": "cd admin && VITE_API_URL=${VITE_API_URL:-https://ai-consultant-8rzo.onrender.com} npm run build",
+  "outputDirectory": "admin/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
