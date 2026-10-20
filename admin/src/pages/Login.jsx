@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import { Button, Card, ErrorNote, Input } from '../components/ui.jsx';
 
 export default function Login() {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState('login');
+  const [params] = useSearchParams();
+  const [mode, setMode] = useState(params.get('mode') === 'register' ? 'register' : 'login');
   const [form, setForm] = useState({ companyName: '', email: '', password: '' });
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -26,6 +28,7 @@ export default function Login() {
 
   return (
     <div className="grid min-h-screen place-items-center px-4">
+      <Link to="/" className="fixed left-4 top-4 text-sm text-slate-500 hover:text-slate-900">← На главную</Link>
       <Card className="w-full max-w-sm p-6">
         <h1 className="text-xl font-semibold">AI-консультант</h1>
         <p className="mt-1 text-sm text-slate-500">

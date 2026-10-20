@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
 import Layout from './components/Layout.jsx';
 import { Spinner } from './components/ui.jsx';
+import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Conversations from './pages/Conversations.jsx';
@@ -19,7 +20,9 @@ export default function App() {
   if (!me) {
     return (
       <Routes>
-        <Route path="*" element={<Login />} />
+        <Route index element={<Landing />} />
+        <Route path="login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
